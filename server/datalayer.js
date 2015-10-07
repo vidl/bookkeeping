@@ -3,6 +3,11 @@ var Schema = mongoose.Schema;
 var restify = require('express-restify-mongoose');
 var timestamps = require('mongoose-timestamp');
 var _ = require('underscore');
+var moment = require('moment');
+var wrapMPromise = require('./wrapMPromise')
+var promisedHook = wrapMPromise.promisedHook;
+var populate = wrapMPromise.populate;
+var q = require('q');
 
 function findOneOrCreate(schema) {
     schema.statics.findOneOrCreate = function findOneOrCreate(condition, doc) {
@@ -13,6 +18,27 @@ function findOneOrCreate(schema) {
         });
     };
 }
+
+function connectToDb(db) {
+
+    mongoose.connect(db);
+    mongoose.connection.on('connected', function () {
+        console.log('Mongoose default connection open to ' + db);
+    });
+    mongoose.connection.on('error',function (err) {
+        console.log('Mongoose default connection error: ' + err);
+    });
+    mongoose.connection.on('disconnected', function () {
+        console.log('Mongoose default connection disconnected');
+    });
+    process.on('SIGINT', function() {
+        mongoose.connection.close(function () {
+            console.log('Mongoose default connection disconnected through app termination');
+            process.exit(0);
+        });
+    });
+}
+
 
 module.exports = function(db){
 
@@ -31,73 +57,79 @@ module.exports = function(db){
         account: new Schema({
             name: String,
             currency: String,
-            freezed: {type: Date, default: new Date(1990, 1, 1) }, // no entries are allowed before that date
+            freezed: {type: Date, default: moment('1990-01-01T00:00:00.000Z').toDate() }, // no entries are allowed before that date
             type: { type: String, enum: ['asset', 'liability', 'expense', 'revenue']} // aktiv, passiv, aufwand, ertrag
         }),
         entry: new Schema({
             date: { type: Date, default: Date.now},
             order: { type: Number, default: 1},
             planned: Boolean,
-            amounts: [{
+            parts: [{
                 account: {type: Schema.Types.ObjectId, ref: 'Account'},
                 amount: currenciesDefinition,
-                text: String,
-                balance: {
-                    planned: currenciesDefinition,
-                    actual: currenciesDefinition
-                }
+                text: String
             }],
             user: String
+        }),
+
+        balance: new Schema({
+            account: {type: Schema.Types.ObjectId, ref: 'Account'},
+            date: { type: Date, default: Date.now},
+            planned: currenciesDefinition,
+            actual: currenciesDefinition
         })
 
     };
 
     schema.setting.plugin(findOneOrCreate);
-
     schema.entry.plugin(timestamps);
+    schema.balance.plugin(timestamps);
+
+
+    var validateFreeze = function(entry) {
+        _.each(entry.parts, function(part){
+            if (entry.date <= part.account.freezed) {
+                throw new Error('Entry is before account freeze date');
+            }
+        });
+        return entry;
+    };
+
+    var validateBalance = function(entry) {
+        var sum = _.reduce(entry.parts, function(memo, part){ return memo + part.amount.baseCurrency; }, 0);
+        if (sum != 0) {
+            throw new Error('Entry is not balanced: ' + sum);
+        }
+        return entry;
+    };
+
+    schema.entry.pre('save', promisedHook(function(promise) {
+            return promise
+                .then(populate('parts.account'))
+                .then(validateFreeze)
+                .then(validateBalance);
+    }));
+
+    schema.entry.pre('remove', promisedHook(function (promise){
+        return promise
+                .then(populate('parts.account'))
+                .then(validateFreeze);
+    }));
 
     var model = {
         setting: mongoose.model('Setting', schema.setting, 'settings'),
         account: mongoose.model('Account', schema.account, 'accounts'),
-        entry: mongoose.model('Entry', schema.entry, 'entries')
+        entry: mongoose.model('Entry', schema.entry, 'entries'),
+        balance: mongoose.model('Balance', schema.balance, 'balances')
     };
 
-
-
-    mongoose.connect(db);
-    // CONNECTION EVENTS
-    // When successfully connected
-    mongoose.connection.on('connected', function () {
-        console.log('Mongoose default connection open to ' + db);
-    });
-
-    // If the connection throws an error
-    mongoose.connection.on('error',function (err) {
-        console.log('Mongoose default connection error: ' + err);
-    });
-
-    // When the connection is disconnected
-    mongoose.connection.on('disconnected', function () {
-        console.log('Mongoose default connection disconnected');
-    });
-
-    // If the Node process ends, close the Mongoose connection
-    process.on('SIGINT', function() {
-        mongoose.connection.close(function () {
-            console.log('Mongoose default connection disconnected through app termination');
-            process.exit(0);
-        });
-    });
+    connectToDb(db);
 
     return {
         addRestRoutes: function(app){
             restify.serve(app, model.setting);
             restify.serve(app, model.account);
-            restify.serve(app, model.entry, {
-                prereq: function(req){
-                    return req.method === 'GET';
-                }
-            });
+            restify.serve(app, model.entry);
 
         },
         model: model

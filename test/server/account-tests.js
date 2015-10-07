@@ -66,7 +66,7 @@ describe('account access', function() {
                     res.body.should.have.a.property('name', account.name);
                     res.body.should.have.a.property('currency', account.currency);
                     res.body.should.have.a.property('type', account.type);
-                    res.body.should.have.a.property('freezed', "1990-01-31T23:00:00.000Z");
+                    res.body.should.have.a.property('freezed', '1990-01-01T00:00:00.000Z');
                 })
                 .expect(200)
             .then(function(oldRes){

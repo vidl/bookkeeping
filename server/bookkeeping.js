@@ -80,8 +80,8 @@ module.exports = function(dbConnection) {
 
     var getEntriesByAccount = function(accountId) {
         return wrapMpromise(
-          dataService.model.entry.find({'amounts.account._id': new ObjectId(accountId)})
-          .populate('amounts.account')
+          dataService.model.entry.find({'parts.account._id': new ObjectId(accountId)})
+          .populate('parts.account')
           .sort('-date order')
           .exec()
         );

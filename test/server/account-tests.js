@@ -68,7 +68,7 @@ describe('account access', function() {
                     res.body.should.have.a.property('type', account.type);
                     res.body.should.have.a.property('freezed', '1990-01-01T00:00:00.000Z');
                 })
-                .expect(200)
+                .expect(201)
             .then(function(oldRes){
                 return request(app)
                     .get(paths.accounts + '/' + oldRes.body._id)
@@ -155,7 +155,7 @@ describe('account access', function() {
             .then(function(res){
                 return request(app)
                     .delete(paths.accounts + '/' + res.body[0]._id)
-                    .expect(200);
+                    .expect(204);
             })
             .then(function(){
                 return request(app)

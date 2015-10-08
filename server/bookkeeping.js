@@ -94,7 +94,7 @@ module.exports = function(dbConnection) {
     dataService.addRestRoutes(app);
 
     app.get('/accounts/:id', function(req, res){
-        getEntriesByAccount(new ObjectId(req.param('id')))
+        getEntriesByAccount(new ObjectId(req.params.id))
             .catch(handleError(res))
             .done(addToBody(res));
     });

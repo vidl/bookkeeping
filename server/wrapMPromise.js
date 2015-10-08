@@ -30,7 +30,6 @@ function promisedHook (body) {
             next();
         };
         var rejected = function (err) {
-            console.log(err);
             next(err);
         };
         body(q(this)).then(fulfilled, rejected);

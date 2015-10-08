@@ -3,6 +3,7 @@ var should = chai.should();
 var request = require("supertest-as-promised");
 var testBookkeeping = require('./helpers/test-bookkeeping.js');
 var moment = require('moment');
+var _ = require('underscore');
 
 chai.use(require('./helpers/chai.js'));
 
@@ -66,13 +67,13 @@ describe('entry access', function() {
     fixtures.entries = {
         entryMay: {
             _id: id(),
-            date: new Date(2015, 5, 1),
+            date: moment('2015-05-01').toDate(),
             planned: false,
-            user: 'test',
+            user: 'entryMay',
             parts: [
                 {
                     account: fixtures.accounts.bank,
-                    text: 'Barbezug',
+                    text: 'Barbezug Mai',
                     amount: {
                         baseCurrency: -10000,
                         accountCurrency: -10000
@@ -80,7 +81,7 @@ describe('entry access', function() {
                 },
                 {
                     account: fixtures.accounts.kasseChf,
-                    text: 'Barbezug',
+                    text: 'Barbezug Mai',
                     amount: {
                         baseCurrency: 10000,
                         accountCurrency: 10000
@@ -90,13 +91,13 @@ describe('entry access', function() {
         },
         entryJune: {
             _id: id(),
-            date: new Date(2015, 6, 1),
+            date: moment('2015-06-01').toDate(),
             planned: false,
-            user: 'test',
+            user: 'entryJune',
             parts: [
                 {
                     account: fixtures.accounts.bank,
-                    text: 'Barbezug',
+                    text: 'Barbezug June',
                     amount: {
                         baseCurrency: -10000,
                         accountCurrency: -10000
@@ -104,7 +105,7 @@ describe('entry access', function() {
                 },
                 {
                     account: fixtures.accounts.kasseEur,
-                    text: 'Barbezug',
+                    text: 'Barbezug June',
                     amount: {
                         baseCurrency: 10000,
                         accountCurrency: 9800
@@ -146,10 +147,10 @@ describe('entry access', function() {
                     res.body.should.be.an('array').with.length(2);
                     res.body[0].should.have.a.property('parts');
                     res.body[0].parts.should.be.an('array').with.length(2);
-                    res.body[0].parts[0].should.have.a.property('text', 'Barbezug');
+                    res.body[0].parts[0].should.have.a.property('text', fixtures.entries.entryJune.parts[0].text);
                     res.body[0].parts[0].should.have.a.deep.property('account._id', fixtures.accounts.bank._id.toString());
-                    res.body[0].parts[0].should.have.a.deep.property('amount.baseCurrency', -10000);
-                    res.body[0].parts[0].should.have.a.deep.property('amount.accountCurrency', -10000);
+                    res.body[0].parts[0].should.have.a.deep.property('amount.baseCurrency', fixtures.entries.entryJune.parts[0].amount.baseCurrency);
+                    res.body[0].parts[0].should.have.a.deep.property('amount.accountCurrency', fixtures.entries.entryJune.parts[0].amount.accountCurrency);
                 })
                 .expect(200, done);
         });
@@ -185,8 +186,8 @@ describe('entry access', function() {
         var entry = {
             _id: 'shouldnotmatter',
             date: entryDate.toDate(),
-            planned: false,
-            user: 'test',
+            planned: true,
+            user: 'test1',
             parts: [
                 {
                     account: fixtures.accounts.bank._id.toString(),
@@ -228,7 +229,7 @@ describe('entry access', function() {
                     res.body.parts[1].should.have.a.deep.property('amount.baseCurrency', entry.parts[1].amount.baseCurrency);
                     res.body.parts[1].should.have.a.deep.property('amount.accountCurrency', entry.parts[1].amount.accountCurrency);
                 })
-                .expect(200)
+                .expect(201)
                 .then(function(oldRes){
                     return request(app)
                         .get(paths.entries + '/' + oldRes.body._id)
@@ -301,8 +302,134 @@ describe('entry access', function() {
                 .send(entry)
                 .expect(400, done);
         });
+        it('should not allow empty parts', function(done){
+            entry.parts = [];
+            entry.date = accountFreezeData.add(1, 'day');
+            request(app)
+                .post(paths.entries)
+                .type('json')
+                .send(entry)
+                .expect(400, done);
+        });
 
     });
 
+    describe('post or put api/entries', function(){
+        var getLastEntry = function() {
+            return request(app)
+                .get(paths.entries)
+                .accept('json')
+                .expect(function(res) {
+                    res.body.should.be.an('array').with.length(3);
+                    res.body[2].should.have.a.property('user','test1');
+                });
+        };
+        it('should update an existing entry', function(done){
+            getLastEntry()
+                .then(function(res) {
+                    var entry = res.body[2];
+                    entry.date = moment('2015-10-03').toDate();
+                    return request(app)
+                        .post(paths.entries + '/' + entry._id)
+                        .type('json')
+                        .send(entry)
+                        .expect(function (res) {
+                            res.body.should.be.an('object');
+                            res.body.should.have.a.property('_id').that.is.a('string');
+                            res.body.should.have.a.property('date', moment('2015-10-03').toISOString());
+                        })
+                        .expect(200);
+                })
+                .then(function(res) {
+                    var data = { parts: [
+                        {
+                            account: fixtures.accounts.bank._id.toString(),
+                            text: 'CHF Bezug Updated',
+                            amount: {
+                                baseCurrency: -8000,
+                                accountCurrency: -8000
+                            }
+                        },
+                        {
+                            account: fixtures.accounts.kasseChf._id.toString(),
+                            text: 'CHF Bezug Updated',
+                            amount: {
+                                baseCurrency: 8000,
+                                accountCurrency: 8000
+                            }
+                        }
+                    ]};
+                    return request(app)
+                        .post(paths.entries + '/' + res.body._id)
+                        .type('json')
+                        .send(data)
+                        .expect(function (res) {
+                            res.body.should.be.an('object');
+                            res.body.should.have.a.property('_id').that.is.a('string');
+                            res.body.should.have.a.property('date', moment('2015-10-03').toISOString());
+                            res.body.parts.should.be.an('array').with.length(2);
+                            res.body.parts[0].should.have.a.deep.property('amount.baseCurrency', -8000);
+                            res.body.parts[1].should.have.a.deep.property('amount.baseCurrency', 8000);
+                        })
+                        .expect(200);
+                })
+                .done(noErr(done), done);
+        });
 
+        it('should validate the balance', function(done){
+            getLastEntry()
+                .then(function(res) {
+                    return request(app)
+                        .post(paths.entries + '/' + res.body[2]._id)
+                        .type('json')
+                        .send({parts: [
+                            {
+                                account: fixtures.accounts.bank._id.toString(),
+                                text: 'Barbezug',
+                                amount: {
+                                    baseCurrency: -10000,
+                                    accountCurrency: -10000
+                                }
+                            },
+                            {
+                                account: fixtures.accounts.kasseChf.toString(),
+                                text: 'Barbezug',
+                                amount: {
+                                    baseCurrency: 8000,
+                                    accountCurrency: 8000
+                                }
+                            }
+                        ]})
+                        .expect(400);
+                })
+                .done(noErr(done), done);
+        });
+
+        it('should not allow entry with no parts', function(done){
+            getLastEntry()
+                .then(function(res) {
+                    return request(app)
+                        .post(paths.entries + '/' + res.body[2]._id)
+                        .type('json')
+                        .send({parts: []})
+                        .expect(400);
+                })
+                .done(noErr(done), done);
+        });
+
+        it('should validate the freeze date', function(done){
+            getLastEntry()
+                .then(function(res) {
+                    return request(app)
+                        .post(paths.entries + '/' + res.body[2]._id)
+                        .type('json')
+                        .send({
+                            user: 'test2',
+                            date: accountFreezeData.subtract(1, 'day').toISOString()
+                        })
+                        .expect(400);
+                })
+                .done(noErr(done), done);
+        });
+    });
 });

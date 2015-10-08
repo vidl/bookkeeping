@@ -96,6 +96,9 @@ module.exports = function(db){
     };
 
     var validateBalance = function(entry) {
+        if (entry.parts.length == 0) {
+            throw new Error('Entry has no parts');
+        }
         var sum = _.reduce(entry.parts, function(memo, part){ return memo + part.amount.baseCurrency; }, 0);
         if (sum != 0) {
             throw new Error('Entry is not balanced: ' + sum);
@@ -129,7 +132,12 @@ module.exports = function(db){
         addRestRoutes: function(app){
             restify.serve(app, model.setting);
             restify.serve(app, model.account);
-            restify.serve(app, model.entry);
+            restify.serve(app, model.entry, {
+                // necessary for calling hooks like pre-save
+                findOneAndUpdate: false,
+                findOneAndRemove: false
+
+            });
 
         },
         model: model

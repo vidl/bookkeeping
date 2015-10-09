@@ -7,9 +7,8 @@ var port = process.env.PORT || 8081;
 
 var app = bookkeeping('mongodb://127.0.0.1:27017/bookkeeping-test');
 
-app.use(express.static('client'));
-// app.use('/pdfs', express.static(__dirname + '/pdfs'));
+app.use(express.static(__dirname + '/' + process.env.STATIC_DIR));
 
 http.createServer(app).listen(port, '0.0.0.0', function() {
-    console.log('Express server listening on port ' + port);
+    console.log('Express server listening on port ' + port + ' serving static content from ' + process.env.STATIC_DIR);
 });

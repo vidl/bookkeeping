@@ -7,7 +7,7 @@ var _ = require('underscore');
 var moment = require('moment');
 var datalayer = require('./datalayer');
 var q = require('q');
-var mongoosePromiseHelper = require('./wrapMPromise')
+var mongoosePromiseHelper = require('./wrapMPromise');
 var wrapMpromise = mongoosePromiseHelper.wrapMpromise;
 var wrapMongooseCallback = mongoosePromiseHelper.wrapMongooseCallback;
 
@@ -49,7 +49,7 @@ function handleError(res){
         res.status(480);
         res.json(err);
         console.log(err.stack);
-    }
+    };
 }
 
 function addToBody(res){

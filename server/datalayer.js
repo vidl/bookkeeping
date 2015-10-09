@@ -4,7 +4,7 @@ var restify = require('express-restify-mongoose');
 var timestamps = require('mongoose-timestamp');
 var _ = require('underscore');
 var moment = require('moment');
-var wrapMPromise = require('./wrapMPromise')
+var wrapMPromise = require('./wrapMPromise');
 var promisedHook = wrapMPromise.promisedHook;
 var populate = wrapMPromise.populate;
 var q = require('q');
@@ -96,11 +96,11 @@ module.exports = function(db){
     };
 
     var validateBalance = function(entry) {
-        if (entry.parts.length == 0) {
+        if (entry.parts.length === 0) {
             throw new Error('Entry has no parts');
         }
         var sum = _.reduce(entry.parts, function(memo, part){ return memo + part.amount.baseCurrency; }, 0);
-        if (sum != 0) {
+        if (sum !== 0) {
             throw new Error('Entry is not balanced: ' + sum);
         }
         return entry;
@@ -141,5 +141,5 @@ module.exports = function(db){
 
         },
         model: model
-    }
+    };
 };

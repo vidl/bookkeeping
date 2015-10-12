@@ -8,6 +8,21 @@
   "dependencies": {
     "angular-strap": "~2.3.3",
     "bootstrap-css-only": "~3.3.5",
-    "angular-ui-router": "~0.2.15"
+    "angular-ui-router": "~0.2.15",
+    "angular-resource": "~1.4.7",
+    "angular-animate": "~1.4.7",
+    "moment": "~2.10.6",
+    "angular-i18n": "~1.4.7"
+  },
+  "overrides": {
+    "moment": {
+      "main": [
+        "moment.js",
+        "locale/de.js"
+      ]
+    },
+    "angular-i18n": {
+      "main": "angular-locale_de-ch.js"
+    }
   }
 }

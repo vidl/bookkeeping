@@ -23,7 +23,7 @@ var paths = {
 var pipes = {};
 
 pipes.orderedVendorScripts = function () {
-    return plugins.order(['jquery.js', 'angular.js']);
+    return plugins.order(['angular/angular.js', 'moment/moment.js', 'moment/locale/de.js']);
 };
 
 pipes.orderedAppScripts = function () {
@@ -61,7 +61,8 @@ pipes.builtAppScriptsProd = function () {
 };
 
 pipes.builtVendorScriptsDev = function () {
-    return gulp.src(bowerFiles())
+    return gulp.src(bowerFiles(), { base: 'bower_components'})
+        .pipe(pipes.orderedVendorScripts())
         .pipe(gulp.dest('dist.dev/bower_components'));
 };
 

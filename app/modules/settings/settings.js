@@ -6,12 +6,12 @@ angular.module('bookkeeping.settings', ['ui.router','ngResource'])
         $stateProvider
             .state('settings',{
                 url: '/settings',
-                templateUrl: 'settings/settings.html',
+                templateUrl: 'modules/settings/settings.html',
                 controller: 'SettingsCtrl'
             })
             .state('settingBaseCurrency', {
                 url: '/settings/baseCurrency/:settingId',
-                templateUrl: 'settings/baseCurrency.html',
+                templateUrl: 'modules/settings/baseCurrency.html',
                 controller: 'SettingCtrl'
 
             })

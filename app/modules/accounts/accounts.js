@@ -1,6 +1,4 @@
-'use strict';
-
-angular.module('bookkeeping.accounts', ['ui.router', 'ngResource', 'bookkeeping.date'])
+angular.module('bookkeeping.accounts', ['ui.router', 'ngResource', 'bookkeeping.date', 'bookkeeping.error'])
 
     .config(['$stateProvider', function ($stateProvider) {
         $stateProvider
@@ -40,7 +38,7 @@ angular.module('bookkeeping.accounts', ['ui.router', 'ngResource', 'bookkeeping.
 
     }])
 
-    .controller('AccountCtrl', ['$scope', '$stateParams', 'Account', '$state', 'accountTypes', function ($scope, $stateParams, Account, $state, accountTypes) {
+    .controller('AccountCtrl', ['$scope', '$stateParams', 'Account', '$state', 'accountTypes', 'errorTooltipHandler', function ($scope, $stateParams, Account, $state, accountTypes, errorTooltipHandler) {
         if ($stateParams.accountId) {
             $scope.account = Account.get($stateParams);
         } else {
@@ -51,11 +49,11 @@ angular.module('bookkeeping.accounts', ['ui.router', 'ngResource', 'bookkeeping.
         var success = function() {
             $state.go('accounts');
         };
-        $scope.remove = function () {
-            $scope.account.$remove(success);
+        $scope.remove = function (event) {
+            $scope.account.$remove(success, errorTooltipHandler(event.target));
         };
         $scope.save = function() {
-            $scope.account.$save(success);
+            $scope.account.$save(success, errorTooltipHandler(event.target));
         };
     }]);
 

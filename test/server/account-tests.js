@@ -2,6 +2,7 @@ var chai = require('chai');
 var should = chai.should();
 var request = require("supertest-as-promised");
 var testBookkeeping = require('./helpers/test-bookkeeping.js');
+var moment = require('moment');
 
 chai.use(require('./helpers/chai.js'));
 
@@ -17,10 +18,9 @@ describe('account access', function() {
     var app = testBookkeeping.app;
 
     var id = testBookkeeping.id;
-    var fixtures = {};
 
     before(function (done) {
-        testBookkeeping.fixtures.clearAllAndLoad(fixtures, done);
+        testBookkeeping.fixtures.clearAllAndLoad({}, done);
     });
 
     describe('get api/accounts', function() {
@@ -147,20 +147,83 @@ describe('account access', function() {
     });
 
     describe('delete api/accounts', function(){
+
+        var accountFreezeData = moment('2015-10-01');
+        var fixtures = {
+            settings: {
+                baseCurrency: {
+                    name: 'baseCurrency',
+                    value: 'CHF',
+                    type: 'baseCurrency'
+                }
+            },
+            accounts: {
+                bank: {
+                    _id: id(),
+                    name: 'Bank',
+                    currency: 'CHF',
+                    type: 'asset',
+                    freezed: accountFreezeData.toDate()
+                },
+                kasseChf: {
+                    _id: id(),
+                    name: 'CHF Kasse',
+                    currency: 'CHF',
+                    type: 'asset',
+                    freezed: accountFreezeData.toDate()
+                },
+                emptyAccount: {
+                    _id: id(),
+                    name: 'empty',
+                    currency: 'CHF',
+                    type: 'liability',
+                    freezed: accountFreezeData.toDate()
+                }
+            },
+
+            entries: {
+            }
+        };
+
+        fixtures.entries = {
+            entryMay: {
+                _id: id(),
+                date: moment('2015-05-01').toDate(),
+                planned: false,
+                user: 'entryMay',
+                parts: [
+                    {
+                        account: fixtures.accounts.bank,
+                        text: 'Barbezug Mai',
+                        amount: {
+                            baseCurrency: -10000,
+                            accountCurrency: -10000
+                        }
+                    },
+                    {
+                        account: fixtures.accounts.kasseChf,
+                        text: 'Barbezug Mai',
+                        amount: {
+                            baseCurrency: 10000,
+                            accountCurrency: 10000
+                        }
+                    }
+                ]
+            }
+        };
+
+        before(function (done) {
+            testBookkeeping.fixtures.clearAllAndLoad(fixtures, done);
+        });
+
         it('removes an existing account', function(done){
             request(app)
-                .get(paths.accounts)
-                .accept('json')
-                .expect(200)
-            .then(function(res){
-                return request(app)
-                    .delete(paths.accounts + '/' + res.body[0]._id)
-                    .expect(204);
-            })
+                .delete(paths.accounts + '/' + fixtures.accounts.emptyAccount._id)
+                .expect(204)
             .then(function(){
                 return request(app)
                     .get(paths.accountsCount)
-                    .expect({count: 0})
+                    .expect({count: 2})
                     .expect(200);
             })
             .then(function(){
@@ -168,12 +231,25 @@ describe('account access', function() {
                     .get(paths.accounts)
                     .accept('json')
                     .expect(function(res){
-                        res.body.should.be.an('array').with.length(0);
+                        res.body.should.be.an('array').with.length(2);
                     })
                     .expect(200);
             })
             .done(noErr(done), done);
        });
+
+        it('validates if no entries are referenced', function(done){
+            request(app)
+                .delete(paths.accounts + '/' + fixtures.accounts.bank._id)
+                .expect(400)
+            .then(function(){
+                return request(app)
+                    .delete(paths.accounts + '/' + fixtures.accounts.kasseChf._id)
+                    .expect(400);
+            })
+            .done(noErr(done), done);
+
+        });
     });
 
 });

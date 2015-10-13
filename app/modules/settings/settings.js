@@ -1,5 +1,3 @@
-'use strict';
-
 angular.module('bookkeeping.settings', ['ui.router','ngResource'])
 
     .config(['$stateProvider', function ($stateProvider) {

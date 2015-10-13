@@ -37,11 +37,12 @@
             <div class="col-sm-10 col-sm-offset-2">
                 <button type="submit" class="btn"
                         ng-class="{'btn-danger': form.$invalid, 'btn-primary': !form.$invalid}"
-                        ng-disabled="form.$invalid" ng-click="save()">Speichern
+                        ng-disabled="form.$invalid" ng-click="save($event)">Speichern
                 </button>
                 <a ui-sref="accounts" class="btn btn-default">Abbrechen</a>
-                <button class="btn btn-danger pull-right" ng-click="remove()" ng-show="account._id">L&ouml;schen</button>
+                <button class="btn btn-danger pull-right" ng-click="remove($event)" ng-show="account._id">L&ouml;schen</button>
             </div>
         </div>
+        <div id="alerts-container"></div>
     </form>
 </div>

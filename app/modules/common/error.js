@@ -4,6 +4,7 @@ angular.module('bookkeeping.error', ['mgcrea.ngStrap', 'bookkeeping.date'])
             'entry': 'Buchung'
         };
         var bookkeepingDate = $filter('bookkeepingDate');
+        var currency = $filter('bookkeepingCurrency');
 
         var transformError = function(errorData) {
             var errorMessage = 'unbekannter Fehler';
@@ -13,7 +14,7 @@ angular.module('bookkeeping.error', ['mgcrea.ngStrap', 'bookkeeping.date'])
                         ' referenzierende Datensätze vom Typ ' + refTypes[errorData.refType];
                     break;
                 case 'notBalanced':
-                    errorMessage = 'Buchung ist nicht ausgeglichen: ' + errorData.balance;
+                    errorMessage = 'Buchung ist nicht ausgeglichen: ' + currency(errorData.balance);
                     break;
                 case 'beforeAccountFreezeDate':
                     errorMessage = 'Buchungsdatum ist vor dem Abschluss-Datum '

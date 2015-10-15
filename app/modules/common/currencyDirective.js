@@ -4,16 +4,16 @@ angular.module('bookkeeping.currency.directive',['bookkeeping.currency.filter'])
     return {
         restrict: 'A',
         require: 'ngModel',
-        link: function(scope, elmement, attrs, ctrl) {
+        link: function(scope, element, attrs, ctrl) {
             var currency = $filter('bookkeepingCurrency');
             ctrl.$render = function() {
-                elmement.val(currency(ctrl.$modelValue));
+                element.val(currency(ctrl.$modelValue));
             };
 
             ctrl.$parsers.unshift(function(viewValue) {
                 if (viewValue === '.') {
                     viewValue = '0.';
-                    elmement.val(viewValue);
+                    element.val(viewValue);
                 }
                 if (FLOAT_REGEXP.test(viewValue)) {
                     ctrl.$setValidity('float', true);

@@ -22,6 +22,16 @@ angular.module('bookkeeping.settings', ['ui.router','ngResource'])
         return $resource('/api/v1/settings/:settingId',{settingId: '@_id'});
     }])
 
+    .factory('settings', ['Setting', function(Setting){
+        var settings = {};
+        Setting.query(function(settingList){
+            angular.forEach(settingList, function(setting){
+                settings[setting.type] = setting.value;
+            });
+        });
+        return settings;
+    }])
+
     .controller('SettingsCtrl', ['$scope', 'Setting', '$state', function ($scope, Setting, $state) {
         $scope.settings = Setting.query();
         $scope.showDetail = function(setting){
@@ -30,17 +40,17 @@ angular.module('bookkeeping.settings', ['ui.router','ngResource'])
 
     }])
 
-    .controller('SettingCtrl', ['$scope', '$stateParams', 'Setting', '$state', function($scope, $stateParams, Setting, $state){
+    .controller('SettingCtrl', ['$scope', '$stateParams', 'Setting', '$state', 'settings', function($scope, $stateParams, Setting, $state, settings){
         $scope.setting = Setting.get($stateParams);
 
+        var success = function(){
+        };
 
         $scope.save = function() {
-            $scope.setting.$save();
-            $state.go('settings');
+            $scope.setting.$save(function(){
+                settings[$scope.setting.type] = $scope.setting.value;
+                $state.go('settings');
+            });
         };
 
-        $scope.remove = function(){
-            $scope.setting.$remove();
-            $state.go('settings');
-        };
     }]);

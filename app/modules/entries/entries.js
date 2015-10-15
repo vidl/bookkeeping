@@ -1,4 +1,4 @@
-angular.module('bookkeeping.entries', ['ui.router', 'ngResource', 'bookkeeping.date', 'bookkeeping.currency.filter'])
+angular.module('bookkeeping.entries', ['ui.router', 'ngResource', 'bookkeeping.date', 'bookkeeping.currency', 'bookkeeping.accounts', 'bookkeeping.settings'])
 
     .config(['$stateProvider', function ($stateProvider) {
         $stateProvider
@@ -19,15 +19,7 @@ angular.module('bookkeeping.entries', ['ui.router', 'ngResource', 'bookkeeping.d
     }])
 
     .controller('EntriesCtrl', ['$scope', 'Entry', '$state', function ($scope, Entry, $state) {
-        /*$scope.entryParts = [];
-        Entry.query(function(entries){
-            angular.forEach(entries, function(entry) {
-                angular.forEach(entry.parts, function(part){
-                    $scope.entries.push(angular.extend(part, entry));
-                })
-            });
-        });*/
-        $scope.entries =  Entry.query({populate: 'parts.account'});
+        $scope.entries =  Entry.query();
 
         $scope.showDetail = function (entry) {
             $state.go('entryDetail', {entryId: entry._id});
@@ -35,7 +27,10 @@ angular.module('bookkeeping.entries', ['ui.router', 'ngResource', 'bookkeeping.d
 
     }])
 
-    .controller('EntryCtrl', ['$scope', '$stateParams', 'Entry', '$state', 'errorTooltipHandler', function ($scope, $stateParams, Entry, $state, errorTooltipHandler) {
+    .controller('EntryCtrl', ['$scope', '$stateParams', 'Entry', '$state', 'errorTooltipHandler', 'Account', 'settings',
+        function ($scope, $stateParams, Entry, $state, errorTooltipHandler, Account, settings) {
+        $scope.accounts = Account.query();
+        $scope.settings = settings;
         if ($stateParams.entryId) {
             $scope.entry = Entry.get($stateParams);
         } else {
@@ -49,6 +44,9 @@ angular.module('bookkeeping.entries', ['ui.router', 'ngResource', 'bookkeeping.d
             $scope.entry.$remove(success, errorTooltipHandler(event.target));
         };
         $scope.save = function() {
+            angular.forEach($scope.entry.parts, function(part){
+                part.account = part.account._id;
+            });
             $scope.entry.$save(success, errorTooltipHandler(event.target));
         };
     }]);

@@ -5,7 +5,6 @@ var bodyParser = require('body-parser');
 var methodOverride = require('method-override');
 var _ = require('underscore');
 var moment = require('moment');
-var datalayer = require('./datalayer');
 var q = require('q');
 var mongoosePromiseHelper = require('./wrapMPromise');
 var wrapMpromise = mongoosePromiseHelper.wrapMpromise;
@@ -74,9 +73,7 @@ function populate(what){
 }
 
 
-module.exports = function(dbConnection) {
-
-    var dataService = datalayer(dbConnection);
+module.exports = function(dataService) {
 
     var getEntriesByAccount = function(accountId) {
         return wrapMpromise(

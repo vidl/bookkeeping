@@ -1,0 +1,1 @@
+angular.module('bookkeeping.currency',['bookkeeping.currency.directive','bookkeeping.currency.filter']);

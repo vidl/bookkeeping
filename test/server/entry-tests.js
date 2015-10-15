@@ -120,6 +120,16 @@ describe('entry access', function() {
         testBookkeeping.fixtures.clearAllAndLoad(fixtures, done);
     });
 
+    describe('get entries from model', function(){
+        it('should not populate account', function(done){
+            testBookkeeping.dataService.model.entry.find().lean(true).exec(function(err, entries){
+                entries.should.be.an('array').with.length(2);
+                entries[0].parts.should.be.an('array').with.length(2);
+                entries[0].parts[0].account.should.be.a('string');
+            });
+        });
+    });
+
     describe('get empty account', function() {
         it('respond with json', function(done){
             request(app)
@@ -170,6 +180,8 @@ describe('entry access', function() {
                 .accept('json')
                 .expect(function(res){
                     res.body.should.be.an('array').with.length(2);
+                    res.body[0].parts.should.be.an('array').with.length(2);
+                    res.body[0].parts[0].account.should.be.a('string');
                 })
                 .expect(200, done);
         });

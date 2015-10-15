@@ -13,30 +13,32 @@
         <div class="form-group">
             <label class="col-sm-2">Konto</label>
             <label class="col-sm-4">Text</label>
-            <label class="col-sm-2">Betrag (Basis)</label>
             <label class="col-sm-2">Betrag (Konto)</label>
+            <label class="col-sm-2">Betrag (Basis)</label>
             <div class="col-sm-1"></div>
         </div>
         <div class="form-group" ng-repeat="part in entry.parts">
-            <div class="col-sm-2">
-                <input type="text" required="account" name="partAccount{{$index}}" class="form-control" ng-model="part.account" bs-options="account.name for account in accounts" placeholder="Konto" bs-typeahead>
+            <div class="col-sm-2"  ng-class="{'has-error': form['partAccount' +$index].$invalid }">
+                <select class="form-control" required="account{{$index}}" name="partAccount{{$index}}" ng-model="part.account">
+                    <option ng-repeat="account in accounts" value="{{account._id}}">{{account.name}}</option>
+                </select>
             </div>
-            <div class="col-sm-4">
-                <input required="text" name="partText{{$index}}" maxlength="45" type="text" class="form-control" ng-model="part.text">
+            <div class="col-sm-4" ng-class="{'has-error': form['partText' +$index].$invalid }">
+                <input required="text{{$index}}" name="partText{{$index}}" maxlength="45" type="text" class="form-control" ng-model="part.text">
             </div>
-            <div class="input-group col-sm-2 pull-left" ng-class="{ invisible: part.account.currency === settings.baseCurrency}" style="margin-right:12px">
-                <input required="currency" name="partBaseAmount{{$index}}" type="text" currency class="form-control text-right" ng-model="part.amount.baseCurrency">
+            <div class="input-group col-sm-2 pull-left" ng-class="{'has-error': form['partAccountAmount' +$index].$invalid }"  style="margin-right:12px">
+                <input required="accountAmount{{$index}}" name="partAccountAmount{{$index}}" type="text" currency class="form-control text-right" ng-model="part.amount.accountCurrency" ng-blur="syncBaseAmountIfDesired(part)">
+                <div class="input-group-addon">{{accountCurrencies[part.account] | uppercase}}</div>
+            </div>
+            <div class="input-group col-sm-2 pull-left" ng-class="{'has-error': form['partBaseAmount' +$index].$invalid }">
+                <input required="baseAmount{{$index}}" name="partBaseAmount{{$index}}" type="text" currency class="form-control text-right" ng-model="part.amount.baseCurrency" ng-disabled="accountCurrencies[part.account] == settings.baseCurrency">
                 <div class="input-group-addon">{{settings.baseCurrency | uppercase}}</div>
-            </div>
-            <div class="input-group col-sm-2 pull-left">
-                <input required="currency" name="partAccountAmount{{$index}}" type="text" currency class="form-control text-right" ng-model="part.amount.accountCurrency">
-                <div class="input-group-addon">{{part.account.currency | uppercase}}</div>
             </div>
             <div class="col-sm-1"><button class="btn btn-default" ng-click="entry.parts.splice($index, 1)"><i class="glyphicon glyphicon-trash"></i></button></div>
         </div>
         <div class="form-group">
             <div class="col-sm-1">
-                <button class="btn btn-default" ng-click="entry.parts.push({})">Hinzufügen</button>
+                <button class="btn btn-default" ng-click="addPart()">Hinzufügen</button>
             </div>
         </div>
         <div class="form-group">

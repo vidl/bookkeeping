@@ -75,26 +75,11 @@ function populate(what){
 
 module.exports = function(dataService) {
 
-    var getEntriesByAccount = function(accountId) {
-        return wrapMpromise(
-          dataService.model.entry.find({'parts.account._id': new ObjectId(accountId)})
-          .populate('parts.account')
-          .sort('-date order')
-          .exec()
-        );
-    };
-
     var app = express();
     app.use(bodyParser.json());
     app.use(methodOverride());
     app.use(session(sessionOptions));
     dataService.addRestRoutes(app);
-
-    app.get('/accounts/:id', function(req, res){
-        getEntriesByAccount(new ObjectId(req.params.id))
-            .catch(handleError(res))
-            .done(addToBody(res));
-    });
 
     return app;
 };

@@ -75,7 +75,7 @@ module.exports = function(db){
             order: { type: Number, default: 1},
             planned: Boolean,
             parts: [{
-                account: Schema.Types.ObjectId, //{type: Schema.Types.ObjectId, ref: 'Account'},
+                account: {type: Schema.Types.ObjectId, ref: 'Account'},
                 amount: currenciesDefinition,
                 text: String
             }],

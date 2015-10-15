@@ -56,7 +56,7 @@ describe('account access', function() {
             user: 'entryMay',
             parts: [
                 {
-                    account: fixtures.accounts.bank,
+                    account: fixtures.accounts.bank._id.toString(),
                     text: 'Barbezug Mai',
                     amount: {
                         baseCurrency: -10000,
@@ -64,7 +64,7 @@ describe('account access', function() {
                     }
                 },
                 {
-                    account: fixtures.accounts.kasseChf,
+                    account: fixtures.accounts.kasseChf._id.toString(),
                     text: 'Barbezug Mai',
                     amount: {
                         baseCurrency: 10000,
@@ -80,7 +80,7 @@ describe('account access', function() {
             user: 'entryJune',
             parts: [
                 {
-                    account: fixtures.accounts.bank,
+                    account: fixtures.accounts.bank._id.toString(),
                     text: 'Barbezug June',
                     amount: {
                         baseCurrency: -10000,
@@ -88,7 +88,7 @@ describe('account access', function() {
                     }
                 },
                 {
-                    account: fixtures.accounts.kasseEur,
+                    account: fixtures.accounts.kasseEur._id.toString(),
                     text: 'Barbezug June',
                     amount: {
                         baseCurrency: 10000,

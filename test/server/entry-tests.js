@@ -14,8 +14,7 @@ describe('entry access', function() {
 
     var paths = {
         entries: '/api/v1/entries',
-        entriesCount: '/api/v1/entries/count',
-        accounts: '/accounts'
+        entriesCount: '/api/v1/entries/count'
     };
     var app = testBookkeeping.app;
 
@@ -72,7 +71,7 @@ describe('entry access', function() {
             user: 'entryMay',
             parts: [
                 {
-                    account: fixtures.accounts.bank,
+                    account: fixtures.accounts.bank._id.toString(),
                     text: 'Barbezug Mai',
                     amount: {
                         baseCurrency: -10000,
@@ -80,7 +79,7 @@ describe('entry access', function() {
                     }
                 },
                 {
-                    account: fixtures.accounts.kasseChf,
+                    account: fixtures.accounts.kasseChf._id.toString(),
                     text: 'Barbezug Mai',
                     amount: {
                         baseCurrency: 10000,
@@ -96,7 +95,7 @@ describe('entry access', function() {
             user: 'entryJune',
             parts: [
                 {
-                    account: fixtures.accounts.bank,
+                    account: fixtures.accounts.bank._id.toString(),
                     text: 'Barbezug June',
                     amount: {
                         baseCurrency: -10000,
@@ -104,7 +103,7 @@ describe('entry access', function() {
                     }
                 },
                 {
-                    account: fixtures.accounts.kasseEur,
+                    account: fixtures.accounts.kasseEur._id.toString(),
                     text: 'Barbezug June',
                     amount: {
                         baseCurrency: 10000,
@@ -123,46 +122,15 @@ describe('entry access', function() {
     describe('get entries from model', function(){
         it('should not populate account', function(done){
             testBookkeeping.dataService.model.entry.find().lean(true).exec(function(err, entries){
-                entries.should.be.an('array').with.length(2);
-                entries[0].parts.should.be.an('array').with.length(2);
-                entries[0].parts[0].account.should.be.a('string');
+                if (err) {
+                    done(err);
+                } else {
+                    entries.should.be.an('array').with.length(2);
+                    entries[0].parts.should.be.an('array').with.length(2);
+                    entries[0].parts[0].account.should.be.a('string');
+                    done();
+                }
             });
-        });
-    });
-
-    describe('get empty account', function() {
-        it('respond with json', function(done){
-            request(app)
-                .get(paths.accounts + '/' + fixtures.accounts.emptyAccount._id)
-                .set('Accept', 'application/json')
-                .expect('Content-Type', /json/)
-                .expect(200, done);
-        });
-        it('returns empty array', function(done){
-            request(app)
-                .get(paths.accounts + '/' + fixtures.accounts.emptyAccount._id)
-                .accept('json')
-                .expect(function(res){
-                    res.body.should.be.an('array').and.empty;
-                })
-                .expect(200, done);
-        });
-    });
-    describe('get non empty account', function() {
-        it('returns data', function(done){
-            request(app)
-                .get(paths.accounts + '/' + fixtures.accounts.bank._id)
-                .accept('json')
-                .expect(function(res){
-                    res.body.should.be.an('array').with.length(2);
-                    res.body[0].should.have.a.property('parts');
-                    res.body[0].parts.should.be.an('array').with.length(2);
-                    res.body[0].parts[0].should.have.a.property('text', fixtures.entries.entryJune.parts[0].text);
-                    res.body[0].parts[0].should.have.a.deep.property('account._id', fixtures.accounts.bank._id.toString());
-                    res.body[0].parts[0].should.have.a.deep.property('amount.baseCurrency', fixtures.entries.entryJune.parts[0].amount.baseCurrency);
-                    res.body[0].parts[0].should.have.a.deep.property('amount.accountCurrency', fixtures.entries.entryJune.parts[0].amount.accountCurrency);
-                })
-                .expect(200, done);
         });
     });
 

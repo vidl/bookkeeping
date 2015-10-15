@@ -1,7 +1,6 @@
 angular.module('bookkeeping.currency.directive',['bookkeeping.currency.filter']).directive('currency', ['$filter', function($filter){
     // inspired by http://docs.angularjs.org/guide/forms
-    // var FLOAT_REGEXP = /^\-?\d+((\.|\,)\d+)?$/;
-    var POSITIVE_FLOAT_REGEXP = /^\d+((\.|\,)\d*)?$/;
+    var FLOAT_REGEXP = /^\-?\d+((\.|\,)\d+)?$/;
     return {
         restrict: 'A',
         require: 'ngModel',
@@ -16,7 +15,7 @@ angular.module('bookkeeping.currency.directive',['bookkeeping.currency.filter'])
                     viewValue = '0.';
                     elmement.val(viewValue);
                 }
-                if (POSITIVE_FLOAT_REGEXP.test(viewValue)) {
+                if (FLOAT_REGEXP.test(viewValue)) {
                     ctrl.$setValidity('float', true);
                     return currency(viewValue.replace(',', '.'));
                 } else {

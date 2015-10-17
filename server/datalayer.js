@@ -67,6 +67,7 @@ module.exports = function(db){
         account: new Schema({
             name: String,
             currency: String,
+            tags: [{type: String}],
             freezed: {type: Date, default: moment('1990-01-01T00:00:00.000Z').toDate() }, // no entries are allowed before that date
             type: { type: String, enum: ['asset', 'liability', 'expense', 'revenue']} // aktiv, passiv, aufwand, ertrag
         }),
@@ -77,6 +78,7 @@ module.exports = function(db){
             parts: [{
                 account: {type: Schema.Types.ObjectId, ref: 'Account'},
                 amount: currenciesDefinition,
+                tags: [{type: String}],
                 text: String
             }],
             user: String

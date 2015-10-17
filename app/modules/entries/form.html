@@ -19,12 +19,24 @@
         </div>
         <div class="form-group" ng-repeat="part in entry.parts">
             <div class="col-sm-2"  ng-class="{'has-error': form['partAccount' +$index].$invalid }">
-                <select class="form-control" required="account{{$index}}" name="partAccount{{$index}}" ng-model="part.account">
+                <select class="form-control" required="account{{$index}}" name="partAccount{{$index}}" ng-model="part.account" ng-change="part.tags = []">
                     <option ng-repeat="account in accounts" value="{{account._id}}">{{account.name}}</option>
                 </select>
             </div>
             <div class="col-sm-4" ng-class="{'has-error': form['partText' +$index].$invalid }">
-                <input required="text{{$index}}" name="partText{{$index}}" maxlength="45" type="text" class="form-control" ng-model="part.text">
+                <div>
+                    <input required="text{{$index}}" name="partText{{$index}}" maxlength="45" type="text" class="form-control" ng-model="part.text">
+                </div>
+                <div>
+                    <a ng-repeat="tag in part.tags"
+                        ng-click="part.tags.splice($index, 1)">
+                        <span class="label label-primary">{{tag}}</span>
+                    </a>
+                    <a ng-repeat="tag in accountTags[part.account] | filter:part.tags:notInArray"
+                        ng-click="part.tags.push(tag)">
+                        <span class="label label-default">{{tag}}</span>
+                    </a>
+                </div>
             </div>
             <div class="input-group col-sm-2 pull-left" ng-class="{'has-error': form['partAccountAmount' +$index].$invalid }"  style="margin-right:12px">
                 <input required="accountAmount{{$index}}" name="partAccountAmount{{$index}}" type="text" currency class="form-control text-right" ng-model="part.amount.accountCurrency" ng-blur="syncBaseAmountIfDesired(part)">

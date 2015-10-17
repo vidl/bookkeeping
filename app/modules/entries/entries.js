@@ -27,12 +27,14 @@ angular.module('bookkeeping.entries', ['ui.router', 'ngResource', 'bookkeeping.d
 
     }])
 
-    .controller('EntryCtrl', ['$scope', '$stateParams', 'Entry', '$state', 'errorTooltipHandler', 'Account', 'settings',
-        function ($scope, $stateParams, Entry, $state, errorTooltipHandler, Account, settings) {
-            $scope.accountCurrencies= {};
+    .controller('EntryCtrl', ['$scope', '$stateParams', 'Entry', '$state', 'errorTooltipHandler', 'Account', 'settings', function ($scope, $stateParams, Entry, $state, errorTooltipHandler, Account, settings) {
+        $scope.accountCurrencies = {};
+        $scope.accountTags = {};
+
         $scope.accounts = Account.query(function(accounts){
             angular.forEach(accounts, function(account){
                 $scope.accountCurrencies[account._id] = account.currency;
+                $scope.accountTags[account._id] = account.tags || [];
             });
         });
         $scope.settings = settings;
@@ -41,7 +43,7 @@ angular.module('bookkeeping.entries', ['ui.router', 'ngResource', 'bookkeeping.d
         } else {
             $scope.entry = new Entry();
             $scope.entry.date = moment().toDate();
-            $scope.entry.parts = [{}];
+            $scope.entry.parts = [{tags: []}];
         }
         var success = function() {
             $state.go('entries');
@@ -72,8 +74,14 @@ angular.module('bookkeeping.entries', ['ui.router', 'ngResource', 'bookkeeping.d
                 amount: {
                     accountCurrency: -sum,
                     baseCurrency: -sum
-                }
+                },
+                tags: []
             });
         };
+
+        $scope.notInArray = function(actual, expected) {
+            return expected.indexOf(actual) < 0;
+        };
+
     }]);
 

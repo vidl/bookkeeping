@@ -1,4 +1,4 @@
-angular.module('bookkeeping.accounts', ['ui.router', 'ngResource', 'bookkeeping.date', 'bookkeeping.error'])
+angular.module('bookkeeping.accounts', ['ui.router', 'ngResource', 'bookkeeping.date', 'bookkeeping.error', 'bookkeeping.stringarray.directive'])
 
     .config(['$stateProvider', function ($stateProvider) {
         $stateProvider

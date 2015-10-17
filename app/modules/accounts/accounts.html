@@ -8,6 +8,7 @@
         <th>Name</th>
         <th>Währung</th>
         <th>Abgeschlossen</th>
+        <th>Tags</th>
     </tr>
     </thead>
     <tbody>
@@ -16,6 +17,7 @@
         <td>{{account.name}}</td>
         <td>{{account.currency}}</td>
         <td>{{account.freezed | bookkeepingDate }}</td>
+        <td><span class="label label-default" ng-repeat="tag in account.tags">{{tag}}</span></td>
     </tr>
     </tbody>
 </table>

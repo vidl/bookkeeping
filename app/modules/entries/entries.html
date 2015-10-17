@@ -17,7 +17,7 @@
     <tr ng-repeat="entry in entries" ng-click="showDetail(entry)" class="cursor-hand">
         <td><div>{{entry.date | bookkeepingDate}}</div></td>
         <td><div ng-repeat="part in entry.parts" >{{part.account.name}}</div></td>
-        <td><div ng-repeat="part in entry.parts" >{{part.text}}</div></td>
+        <td><div ng-repeat="part in entry.parts" >{{part.text}} <span class="label label-default" style="margin-right: 1ex;" ng-repeat="tag in part.tags">{{tag}}</span></div></td>
         <td class="text-right"><div ng-repeat="part in entry.parts" >{{part.amount.accountCurrency | bookkeepingCurrency:part.account.currency}}</div></td>
     </tr>
     </tbody>

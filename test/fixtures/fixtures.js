@@ -23,14 +23,14 @@ describe('account access', function() {
             },
             kasseChf: {
                 _id: id(),
-                name: 'CHF Kasse',
+                name: 'Kasse CHF',
                 currency: 'CHF',
                 type: 'asset',
                 freezed: accountFreezeData.toDate()
             },
             kasseEur: {
                 _id: id(),
-                name: 'EUR Kasse',
+                name: 'Kasse EUR',
                 currency: 'EUR',
                 type: 'asset',
                 freezed: accountFreezeData.toDate()
